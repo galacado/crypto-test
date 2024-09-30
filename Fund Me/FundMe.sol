@@ -5,26 +5,34 @@ import "./PriceConverter.sol";
 
 // 1 ether = 1e18
 
-// error NotOwner();
+error NotOwner();
 
 contract FundMe {
     using PriceConverter for uint256;
 
-    uint256 public minimumUsd = 50 * 1e18;
+    uint256 public constant MINIMUM_USD = 50 * 1e18;
 
     address[] public funders;
     mapping(address => uint256) public addressToAmountFunded;
 
-    address public owner;
+    address public immutable i_owner;
 
     constructor(){
-        owner = msg.sender;
+        i_owner = msg.sender;
     }
 
     function fund() public payable{
-        require(msg.value.getConversionRate() >= minimumUsd, "Didn't send enough ether :("); 
-        funders.push(msg.sender);
-        addressToAmountFunded[msg.sender] = msg.value;
+        require(msg.value.getConversionRate() >= MINIMUM_USD, "Didn't send enough ether :("); 
+
+        for(uint256 i = 0; i < funders.length; i++){
+            if(funders[i] == msg.sender){
+                addressToAmountFunded[msg.sender] += msg.value;
+            }
+            else{
+                funders.push(msg.sender);
+                addressToAmountFunded[msg.sender] = msg.value;
+            }
+        }
     }
 
     function withdraw() public onlyOwner{
@@ -33,7 +41,6 @@ contract FundMe {
             addressToAmountFunded[funder] = 0;
         }
 
-        // reset the array
         funders = new address[](0);
 
         // transfer:
@@ -49,7 +56,12 @@ contract FundMe {
     }
 
     modifier onlyOwner {
-        require(msg.sender == owner, "Sender is not owner!!");
+        // require(msg.sender == i_owner, "Sender is not owner!!");
+        if(msg.sender != i_owner) { revert NotOwner(); }
         _;
     }
+
+    receive() external payable { fund(); }
+
+    fallback() external payable { fund(); }
 }
