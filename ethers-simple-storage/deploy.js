@@ -1,26 +1,19 @@
 const ethers = require("ethers");
 const fs = require("fs-extra");
-
 require('dotenv').config;
-
 
 async function main() {
     // compile them separately: 
-    const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:7545");
+    const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
 
     const privateKey = process.env.PRIVATE_KEY;
-    
-    // Ensure the private key is defined
-    console.log(process.env);
-    if (!privateKey) {
-        console.error("Private key is not defined. Please check your .env file.");
-        process.exit(1);
-    }
-
-    // Create a wallet instance
+    // console.log(process.env);
+    // if (!privateKey) {
+    //     console.error("Private key is not defined. Please check your .env file.");
+    //     process.exit(1);
+    // }
     const wallet = new ethers.Wallet(privateKey, provider);
 
-    // const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
     const abi = fs.readFileSync("./SimpleStorage_sol_SimpleStorage.abi", "utf8");
     const binary = fs.readFileSync("./SimpleStorage_sol_SimpleStorage.bin", "utf8");
     const contractFactory = new ethers.ContractFactory(abi, binary, wallet);
