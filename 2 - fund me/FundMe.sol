@@ -24,15 +24,19 @@ contract FundMe {
     function fund() public payable{
         require(msg.value.getConversionRate() >= MINIMUM_USD, "Didn't send enough ether :("); 
 
-        for(uint256 i = 0; i < funders.length; i++){
-            if(funders[i] == msg.sender){
-                addressToAmountFunded[msg.sender] += msg.value;
-            }
-            else{
-                funders.push(msg.sender);
-                addressToAmountFunded[msg.sender] = msg.value;
-            }
-        }
+        s_addressToAmountFunded[msg.sender] += msg.value;
+        s_funders.push(msg.sender);
+
+        // Test this:
+        // for(uint256 i = 0; i < funders.length; i++){
+        //     if(funders[i] == msg.sender){
+        //         addressToAmountFunded[msg.sender] += msg.value;
+        //     }
+        //     else{
+        //         funders.push(msg.sender);
+        //         addressToAmountFunded[msg.sender] = msg.value;
+        //     }
+        // }
     }
 
     function withdraw() public onlyOwner{
